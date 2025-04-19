@@ -1,0 +1,43 @@
+{
+  "name": "none",
+  "version": "1.0.0",
+  "main": "index.js",
+  "type": "module",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1",
+    "start:build": "rimraf -rf dist && npm run build && npm run start",
+    "start": "node dist/server.js",
+    "build": "tsc",
+    "create-migration": "cross-env ENV_PATH=../.env knex migrate:make -x cjs --esm --knexfile src/knexfile.ts",
+    "migrate": "cross-env ENV_PATH=../.env knex migrate:latest --esm --knexfile src/knexfile.ts",
+    "migrate-down": "cross-env ENV_PATH=../.env knex migrate:down --esm --knexfile src/knexfile.ts"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "description": "",
+  "dependencies": {
+    "dotenv": "^16.4.7",
+    "express": "^4.21.2",
+    "knex": "^3.1.0",
+    "mysql2": "^3.12.0",
+    "puppeteer": "^24.1.0",
+    "puppeteer-core": "^24.1.0",
+    "puppeteer-extra": "^3.3.6",
+    "puppeteer-extra-plugin-stealth": "^2.11.2",
+    "swagger-jsdoc": "^6.2.8",
+    "swagger-ui-express": "^5.0.1"
+  },
+  "devDependencies": {
+    "@types/dotenv": "^6.1.1",
+    "@types/express": "^5.0.0",
+    "@types/knex": "^0.15.2",
+    "@types/puppeteer": "^5.4.7",
+    "@types/swagger-jsdoc": "^6.0.4",
+    "@types/swagger-ui-express": "^4.1.7",
+    "cross-env": "^7.0.3",
+    "nodemon": "^3.1.9",
+    "ts-node": "^10.9.2",
+    "typescript": "^5.7.3"
+  }
+}
