@@ -3,15 +3,28 @@
 import path from "path";
 import { fileURLToPath } from "url";
 import dotenv from "dotenv";
+import { NextFunction, Response } from "express";
+import cors from "cors";
+import { Products } from "./constants/Product.js"
+
+
 
 import express from "express";
-import loginRouter from "./routers/loginRouter.js";
+// import loginRouter from "./routers/loginRouter.js";
 // import swaggerUI from "swagger-ui-express";
 import swaggerJsDoc from "swagger-jsdoc";
 import { options } from "./swagger/swagger.js";
 
+
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
+
+const projectRoot = path.resolve(__dirname, '..'); // Go one level up from the script's dir
+const assetsPath = path.join(projectRoot, 'assets'); // Path to the actual assets folder
+
+// --- Debugging: Log the calculated assets path ---
+console.log(`[Server Setup] Serving static files from: ${assetsPath}`);
+// ---
 
 // Load environment variables from .env file
 dotenv.config({
@@ -24,7 +37,10 @@ const PORT = process.env.SERVER_PORT || 3000;
 const swaggerSpecs = swaggerJsDoc(options);
 
 app.use(express.json());
-app.use(express.static(path.join(__dirname, "public")));
+// Any request starting with /assets/... will look for files in your assetsPath folder
+app.use('/assets', express.static(assetsPath));
+// ---
+app.use(cors({ origin: "http://localhost:3000" }));
 
 // Swagger middleware
 // app.use(
@@ -36,7 +52,19 @@ app.use(express.static(path.join(__dirname, "public")));
 //   })
 // );
 
-app.use("/login", loginRouter);
+app.get("/login", (req: any, res: Response) => {
+  console.log("Received request for login...");
+
+  res.status(200).send({ data: { message: "Hello world!" } });
+});
+
+app.get("/products", (req: any, res: Response) => {
+  res.status(200).send({
+    data: {
+      Products
+    }
+  })
+})
 
 app.listen(PORT, () => {
   console.log(`Server is running on http://localhost:${PORT}`);
