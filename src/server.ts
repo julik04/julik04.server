@@ -6,6 +6,7 @@ import dotenv from "dotenv";
 import { NextFunction, Response } from "express";
 import cors from "cors";
 import { Products } from "./constants/Product.js"
+import { Masters, MasterInfo } from "./constants/Masters.js";
 
 
 
@@ -62,6 +63,15 @@ app.get("/products", (req: any, res: Response) => {
   res.status(200).send({
     data: {
       Products
+    }
+  })
+})
+
+app.get("/masters", (req: any, res: Response) => {
+  res.status(200).send({
+    data: {
+      Masters,
+      MasterInfo
     }
   })
 })
