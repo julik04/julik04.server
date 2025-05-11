@@ -7,6 +7,7 @@ import { NextFunction, Response } from "express";
 import cors from "cors";
 import { Products } from "./constants/Product.js"
 import { Masters, MasterInfo } from "./constants/Masters.js";
+import productsDbService from "./services/db/productsDbService.js";
 
 
 
@@ -63,6 +64,16 @@ app.get("/products", (req: any, res: Response) => {
   res.status(200).send({
     data: {
       Products
+    }
+  })
+})
+
+app.get("/product", async (req: any, res: Response) => {
+  const product = await productsDbService.getById(6);
+  console.log({ product })
+  res.status(200).send({
+    data: {
+      Product: product,
     }
   })
 })

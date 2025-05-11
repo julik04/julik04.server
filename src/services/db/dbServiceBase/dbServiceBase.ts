@@ -10,6 +10,7 @@ export class DbServiceBase {
     if (!(environment in knexfile)) {
       throw new Error(`Invalid NODE_ENV: ${environment}`);
     }
+    console.log(knexfile[environment]);
     this.Knex = knex(knexfile[environment]);
   }
 }

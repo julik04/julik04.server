@@ -1,12 +1,3 @@
-import mas1 from "../../assets/img-1.jpg";
-import mas2 from "../../assets/img-2.jpg";
-import mas3 from "../../assets/img-3.jpg";
-import mas4 from "../../assets/img-4.jpg";
-import mas5 from "../../assets/img-5.jpg";
-import mas6 from "../../assets/img-6.jpg";
-import mas7 from "../../assets/img-7.jpg";
-import mas8 from "../../assets/img-8.jpg";
-
 export const Masters = [
     {
         name: "Канье Петров",

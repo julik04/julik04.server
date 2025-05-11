@@ -1,5 +1,6 @@
 import { NextFunction, Response } from "express";
 import catchAsync from "../utils/catchAsync.js";
+import productsDbService from "../services/db/productsDbService.js";
 
 
 export class PupeteerController {
@@ -7,7 +8,10 @@ export class PupeteerController {
     async (req: any, res: Response, next: NextFunction) => {
       console.log("Received request for login...");
 
-      res.status(200).json({ status: 'Ok' });
+      const product = await productsDbService.getWithCategory(1)
+
+
+      res.status(200).json({ status: 'Ok', data: product });
     }
   );
 }
