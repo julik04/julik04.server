@@ -8,7 +8,8 @@ import cors from "cors";
 import { Products } from "./constants/Product.js"
 import { Masters, MasterInfo } from "./constants/Masters.js";
 import productsDbService from "./services/db/productsDbService.js";
-
+import usersDbService from "./services/db/usersDbService.js";
+import jwt from "jsonwebtoken";
 
 
 import express from "express";
@@ -23,6 +24,9 @@ const __dirname = path.dirname(__filename);
 
 const projectRoot = path.resolve(__dirname, '..'); // Go one level up from the script's dir
 const assetsPath = path.join(projectRoot, 'assets'); // Path to the actual assets folder
+
+const JWT_SECRET = process.env.JWT_SECRET || 'your_secret_key_here' as jwt.Secret;;
+const EXPIRES_IN = process.env.JWT_EXPIRES_IN || 3600000; // 1h
 
 // --- Debugging: Log the calculated assets path ---
 console.log(`[Server Setup] Serving static files from: ${assetsPath}`);
@@ -54,10 +58,58 @@ app.use(cors({ origin: "http://localhost:3000" }));
 //   })
 // );
 
-app.get("/login", (req: any, res: Response) => {
+const generateToken = (id: number) => {
+  return jwt.sign({ id }, JWT_SECRET, { expiresIn: 100 });
+};
+
+app.post("/login", async (req: any, res: Response) => {
   console.log("Received request for login...");
 
-  res.status(200).send({ data: { message: "Hello world!" } });
+  console.log({ reg: req.body });
+  const login = req.body.login;
+  const password = req.body.password;
+
+  if (!login || !password) {
+    res.status(400).send({ data: { message: "Login or password is empty!" } });
+    return;
+  }
+
+  const user = await usersDbService.findByLogin(login);
+  console.log({ user });
+
+  if (!user) {
+    res.status(400).send({ data: { message: "Login is wrong!" } });
+    return;
+  }
+
+  const isSuccess = user.password === password;
+
+  if (!isSuccess) {
+    res.status(400).send({ data: { message: "Password is wrong!" } });
+    return;
+  }
+
+  // Логика с JWT токеном
+
+  // let token;
+
+  // // Get token from Authorization header
+  // if (
+  //   req.headers.authorization &&
+  //   req.headers.authorization.startsWith('Bearer')
+  // ) {
+  //   token = req.headers.authorization.split(' ')[1];
+  // }
+
+  // console.log({ token })
+
+  const token = generateToken(user.id);
+
+  console.log({ token })
+  await usersDbService.updateAccessToken(user.id, token);
+
+
+  res.status(200).send({ data: { message: "Success!", acessToken: token } });
 });
 
 app.get("/products", (req: any, res: Response) => {

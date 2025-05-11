@@ -5,6 +5,8 @@
   "type": "module",
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1",
+    "start:dev": "nodemon dist/server.js",
+    "start:build:dev": "rimraf -rf dist && npm run build && npm run start:dev",
     "start:build": "rimraf -rf dist && npm run build && npm run start",
     "start": "node dist/server.js",
     "build": "tsc",
@@ -18,9 +20,11 @@
   "license": "ISC",
   "description": "",
   "dependencies": {
+    "bcryptjs": "^3.0.2",
     "cors": "^2.8.5",
     "dotenv": "^16.4.7",
     "express": "^4.21.2",
+    "jsonwebtoken": "^9.0.2",
     "knex": "^3.1.0",
     "mysql2": "^3.12.0",
     "pg": "^8.15.6",
@@ -36,12 +40,13 @@
     "@types/cors": "^2.8.17",
     "@types/dotenv": "^6.1.1",
     "@types/express": "^5.0.0",
+    "@types/jsonwebtoken": "^9.0.9",
     "@types/knex": "^0.15.2",
     "@types/puppeteer": "^5.4.7",
     "@types/swagger-jsdoc": "^6.0.4",
     "@types/swagger-ui-express": "^4.1.7",
     "cross-env": "^7.0.3",
-    "nodemon": "^3.1.9",
+    "nodemon": "^3.1.10",
     "ts-node": "^10.9.2",
     "typescript": "^5.7.3"
   }
