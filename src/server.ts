@@ -9,7 +9,7 @@ import { Products } from "./constants/Product.js"
 import { Masters, MasterInfo } from "./constants/Masters.js";
 import productsDbService from "./services/db/productsDbService.js";
 import usersDbService from "./services/db/usersDbService.js";
-import jwt from "jsonwebtoken";
+import jwtService from "./services/jwtService.js";
 
 
 import express from "express";
@@ -24,9 +24,6 @@ const __dirname = path.dirname(__filename);
 
 const projectRoot = path.resolve(__dirname, '..'); // Go one level up from the script's dir
 const assetsPath = path.join(projectRoot, 'assets'); // Path to the actual assets folder
-
-const JWT_SECRET = process.env.JWT_SECRET || 'your_secret_key_here' as jwt.Secret;;
-const EXPIRES_IN = process.env.JWT_EXPIRES_IN || 3600000; // 1h
 
 // --- Debugging: Log the calculated assets path ---
 console.log(`[Server Setup] Serving static files from: ${assetsPath}`);
@@ -58,9 +55,57 @@ app.use(cors({ origin: "http://localhost:3000" }));
 //   })
 // );
 
-const generateToken = (id: number) => {
-  return jwt.sign({ id }, JWT_SECRET, { expiresIn: 100 });
-};
+app.post("/signup", async (req: any, res: Response) => {
+  const body = req.body;
+  const login = body.login;
+  const password = body.password;
+  const repeatPassword = body.repeatPassword;
+
+  if (!login) {
+    res.status(400).send({ data: { message: "Login is empty!" } });
+    return;
+  }
+
+  if (!password) {
+    res.status(400).send({ data: { message: "Password is empty!" } });
+    return;
+  }
+
+  if (!repeatPassword) {
+    res.status(400).send({ data: { message: "RepeatPassword is empty!" } });
+    return;
+  }
+
+  const isLoginValid = /^(?=.*\d)[a-zA-Z0-9]{4,14}$/.test(login);
+
+  if (!isLoginValid) {
+    res.status(400).send({ data: { message: "Login is not valid!" } });
+    return;
+  }
+
+  const isLoginUnique = !(await usersDbService.findByLogin(login));
+
+  if (!isLoginUnique) {
+    res.status(400).send({ data: { message: "Login is not unique!" } });
+    return;
+  }
+
+  const isPassValid = /^(?=.*\d)(?=.*[A-Z])[a-zA-Z0-9]{7,14}$/.test(password);
+
+  if (!isPassValid) {
+    res.status(400).send({ data: { message: "Password is not valid!" } });
+    return;
+  }
+
+  if (repeatPassword !== password) {
+    res.status(400).send({ data: { message: "Password is not equal to repeatPassword!" } });
+    return;
+  }
+
+  const user = await usersDbService.createUser({ login, password });
+
+  res.status(200).send({ data: { message: "User successfully created!" } });
+})
 
 app.post("/login", async (req: any, res: Response) => {
   console.log("Received request for login...");
@@ -91,23 +136,12 @@ app.post("/login", async (req: any, res: Response) => {
 
   // Логика с JWT токеном
 
-  // let token;
-
-  // // Get token from Authorization header
-  // if (
-  //   req.headers.authorization &&
-  //   req.headers.authorization.startsWith('Bearer')
-  // ) {
-  //   token = req.headers.authorization.split(' ')[1];
-  // }
-
-  // console.log({ token })
-
-  const token = generateToken(user.id);
-
-  console.log({ token })
+  const token = await jwtService.sign({ user });
   await usersDbService.updateAccessToken(user.id, token);
 
+  const decodedPayload = jwtService.decode(token);
+
+  console.log({ decodedPayload })
 
   res.status(200).send({ data: { message: "Success!", acessToken: token } });
 });
