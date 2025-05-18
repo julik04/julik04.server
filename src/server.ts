@@ -102,7 +102,16 @@ app.post("/signup", async (req: any, res: Response) => {
     return;
   }
 
-  const user = await usersDbService.createUser({ login, password });
+  const hashedPassword = await usersDbService.hashPassword(password);
+
+  if (!hashedPassword) {
+    res.status(400).send({ data: { message: "Error to hash a password!" } })
+    return;
+  }
+
+  const user = await usersDbService.createUser({ login, password: hashedPassword });
+
+  const isPassChecked = await usersDbService.comparePassword(password, hashedPassword);
 
   res.status(200).send({ data: { message: "User successfully created!" } });
 })
@@ -127,7 +136,7 @@ app.post("/login", async (req: any, res: Response) => {
     return;
   }
 
-  const isSuccess = user.password === password;
+  const isSuccess = await usersDbService.comparePassword(password, user.password);
 
   if (!isSuccess) {
     res.status(400).send({ data: { message: "Password is wrong!" } });
@@ -141,9 +150,9 @@ app.post("/login", async (req: any, res: Response) => {
 
   const decodedPayload = jwtService.decode(token);
 
-  console.log({ decodedPayload })
+  console.log({ decodedPayload });
 
-  res.status(200).send({ data: { message: "Success!", acessToken: token } });
+  res.status(200).send({ data: { message: "Success!", acessToken: token, login: login } });
 });
 
 app.get("/products", (req: any, res: Response) => {

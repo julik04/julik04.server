@@ -1,10 +1,21 @@
 import { json } from "express";
 import { DbServiceBase } from "./dbServiceBase/dbServiceBase.js";
 import knex from "knex";
+import bcrypt from 'bcrypt';
 
 export class UsersDbService extends DbServiceBase {
+    pepper: string;
+
     constructor() {
         super();
+
+        const pepper = process.env.SECURITY_PEPPER;
+
+        if (!pepper) {
+            throw new Error('SECURITY_PEPPER environment variable is not set');
+        }
+
+        this.pepper = pepper;
     }
 
     async getById(id: number) {
@@ -46,6 +57,29 @@ export class UsersDbService extends DbServiceBase {
         return this.Knex('users').select();
     }
 
+
+    async hashPassword(password): Promise<string | null> {
+        const combinedString = `${password}${this.pepper}`;
+        const saltRounds = 10;
+
+        try {
+            const hash = await bcrypt.hash(combinedString, saltRounds);
+            return hash;
+        } catch (error) {
+            throw new Error('Error hashing password');
+        }
+    }
+
+    async comparePassword(password, hash) {
+        const combinedString = `${password}${this.pepper}`;
+
+        try {
+            const match = await bcrypt.compare(combinedString, hash);
+            return match;
+        } catch (error) {
+            throw new Error('Error comparing passwords');
+        }
+    }
 }
 
 export default new UsersDbService();
