@@ -3,15 +3,19 @@ exports.seed = function (knex) {
     {
       name: "Канье Петров",
       experience: 7,
-      image: "/assets/img-1.jpg",
+      image: "assets/img-1.jpg",
       resume: "Резюме Канье Петрова: ляляляляя",
-      gallery:
-        '["/assets/img-1.jpg", "/assets/img-1.jpg","/assets/img-1.jpg","/assets/img-1.jpg"]',
+      gallery: [
+        "assets/img-1.jpg",
+        "assets/img-1.jpg",
+        "assets/img-1.jpg",
+        "assets/img-1.jpg",
+      ],
     },
     {
       name: "Фар Куад",
       experience: 3,
-      image: "/assets/img-2.png",
+      image: "assets/img-2.png",
       resume: "Резюме Фар Куада: ляляляляя",
       gallery:
         '["/assets/img-2.png", "/assets/img-2.png","/assets/img-2.png","/assets/img-2.png"]',
@@ -19,7 +23,7 @@ exports.seed = function (knex) {
     {
       name: "Марио Марьев",
       experience: 20,
-      image: "/assets/img-3.jpg",
+      image: "assets/img-3.jpg",
       resume: "mariooo",
       gallery:
         '["/assets/img-3.jpg", "/assets/img-3.jpg","/assets/img-3.jpg","/assets/img-3.jpg"]',
@@ -27,7 +31,7 @@ exports.seed = function (knex) {
     {
       name: "Петр Котов",
       experience: 2,
-      image: "/assets/img-4.jpg",
+      image: "assets/img-4.jpg",
       resume: "mya",
       gallery:
         '["/assets/img-4.jpg", "/assets/img-4.jpg","/assets/img-4.jpg","/assets/img-4.jpg"]',
@@ -35,14 +39,14 @@ exports.seed = function (knex) {
     {
       name: "Жанна Жабова",
       experience: 4,
-      image: "/assets/img-5.jpg",
+      image: "assets/img-5.jpg",
       resume: null,
       gallery: null,
     },
     {
       name: "Шрек Шмеков",
       experience: 22,
-      image: "/assets/img-6.jpg",
+      image: "assets/img-6.jpg",
       resume: null,
       gallery: null,
     },
