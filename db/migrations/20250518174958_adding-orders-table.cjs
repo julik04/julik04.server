@@ -7,7 +7,6 @@ exports.up = function (knex) {
       .references("id")
       .inTable("users")
       .notNullable();
-    table.string("phone_number", 15).unique().notNullable();
     table.timestamp("order_date").notNullable();
     table.text("comment");
     table.timestamps(true, true);

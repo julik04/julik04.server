@@ -10,6 +10,7 @@ import { Masters, MasterInfo } from "./constants/Masters.js";
 import productsDbService from "./services/db/productsDbService.js";
 import usersDbService from "./services/db/usersDbService.js";
 import jwtService from "./services/jwtService.js";
+import ordersDbService from "./services/db/ordersDbService.js";
 
 
 import express from "express";
@@ -60,6 +61,10 @@ app.post("/signup", async (req: any, res: Response) => {
   const login = body.login;
   const password = body.password;
   const repeatPassword = body.repeatPassword;
+  const full_name = body.full_name;
+  const phone_number = body.phone_number; // 8-917-324-21-21
+  const birth_date = body.birth_date; // 2020-01-01
+
 
   if (!login) {
     res.status(400).send({ data: { message: "Login is empty!" } });
@@ -78,7 +83,7 @@ app.post("/signup", async (req: any, res: Response) => {
 
   const isLoginValid = /^(?=.*\d)[a-zA-Z0-9]{4,14}$/.test(login);
 
-  if (!isLoginValid) {
+  if (!isLoginValid || !(login.length > 6 && login.length < 255)) {
     res.status(400).send({ data: { message: "Login is not valid!" } });
     return;
   }
@@ -92,7 +97,7 @@ app.post("/signup", async (req: any, res: Response) => {
 
   const isPassValid = /^(?=.*\d)(?=.*[A-Z])[a-zA-Z0-9]{7,14}$/.test(password);
 
-  if (!isPassValid) {
+  if (!isPassValid || !(password.length > 6 && password.length < 255)) {
     res.status(400).send({ data: { message: "Password is not valid!" } });
     return;
   }
@@ -109,7 +114,28 @@ app.post("/signup", async (req: any, res: Response) => {
     return;
   }
 
-  const user = await usersDbService.createUser({ login, password: hashedPassword });
+  const dateRegex =
+    /((20)[0-9]{2}[-](0[13578]|1[02])[-](0[1-9]|[12][0-9]|3[01]))|((20)[0-9]{2}[-](0[469]|11)[-](0[1-9]|[12][0-9]|30))|((20)[0-9]{2}[-](02)[-](0[1-9]|1[0-9]|2[0-8]))|((((20)(04|08|[2468][048]|[13579][26]))|2000)[-](02)[-]29)/;
+
+
+  if (!birth_date || !dateRegex.test(birth_date)) {
+    res.status(400).send({ data: { message: "Birth date is empty or not valid!" } });
+    return;
+  }
+
+  if (!phone_number || !/^(\+7|7|8)?[\s\-]?\(?[489][0-9]{2}\)?[\s\-]?[0-9]{3}[\s\-]?[0-9]{2}[\s\-]?[0-9]{2}$/.test(
+    phone_number
+  )) {
+    res.status(400).send({ data: { message: "Phone number is empty or not valid!" } });
+    return;
+  }
+
+  if (!full_name || !(full_name.length < 255)) {
+    res.status(400).send({ data: { message: "Full name is empty or not valid!" } });
+    return;
+  }
+
+  const user = await usersDbService.createUser({ login, password: hashedPassword, full_name, phone_number, birth_date });
 
   const isPassChecked = await usersDbService.comparePassword(password, hashedPassword);
 
@@ -152,7 +178,7 @@ app.post("/login", async (req: any, res: Response) => {
 
   console.log({ decodedPayload });
 
-  res.status(200).send({ data: { message: "Success!", acessToken: token, login: login } });
+  res.status(200).send({ data: { message: "Success!", acessToken: token, login: login, role: user.role } });
 });
 
 app.get("/products", (req: any, res: Response) => {
@@ -180,6 +206,76 @@ app.get("/masters", (req: any, res: Response) => {
       MasterInfo
     }
   })
+})
+
+app.get("/orders/:userId", async (req: any, res: Response) => {
+  const userId = req.params;
+  const orders = await (userId ? ordersDbService.getOrdersByUserId(userId) : ordersDbService.getAllOrders());
+
+  res.status(200).send({
+    data: {
+      Orders: orders
+    }
+  })
+})
+
+app.post("/orders", async (req: any, res: Response) => {
+  const user_id = req.body.user_id;
+  // const phone_number = req.body.phone_number;
+  const order_date = req.body.order_date;
+  const comment = req.body.comment;
+
+  if (!user_id || !(await usersDbService.getById(user_id))) {
+    res.status(400).send({ data: { message: "User id is empty or not found!" } });
+    return;
+  }
+
+  // if (!phone_number || !/^(\+7|7|8)?[\s\-]?\(?[489][0-9]{2}\)?[\s\-]?[0-9]{3}[\s\-]?[0-9]{2}[\s\-]?[0-9]{2}$/.test(
+  //   phone_number
+  // )) {
+  //   res.status(400).send({ data: { message: "Phone number is empty or not valid!" } });
+  //   return;
+  // }
+
+  console.log({ order_date })
+
+  if (!order_date || (new Date(order_date) < new Date())) {
+    console.log({
+      order_date: new Date(order_date),
+      today: new Date()
+    })
+    res.status(400).send({ data: { message: "Order date is empty or it cannot be in the past!" } });
+    return;
+  }
+
+  try {
+    const order = await ordersDbService.createOrder({ user_id, order_date, comment })
+
+
+    res.status(200).send({
+      data: {
+        message: "Success!",
+        Order: order,
+      }
+    });
+    return;
+  } catch (err) {
+    res.status(400).send({ data: { message: err.message } });
+    return;
+  }
+})
+
+app.get("/users/:login", async (req: any, res: Response) => {
+  const login = req.params.login;
+
+  const user = await usersDbService.findByLogin(login);
+
+  res.status(200).send({
+    data: {
+      message: "Success!",
+      User: user,
+    }
+  });
 })
 
 app.listen(PORT, () => {

@@ -4,6 +4,9 @@ exports.up = function (knex) {
     table.string("login");
     table.text("accessToken");
     table.text("password");
+    table.string("full_name");
+    table.string("phone_number", 15).unique().notNullable();
+    table.timestamp("birth_date").notNullable();
     table.timestamps(true, true);
   });
 };

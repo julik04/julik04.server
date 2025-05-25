@@ -27,11 +27,10 @@ export class UsersDbService extends DbServiceBase {
         return this.Knex("users").where("users.login", login).first();
     }
 
-    async createUser(userData: { login: string; password: string }) {
+    async createUser(userData: { login: string; password: string, full_name: string, phone_number: string, birth_date: Date }) {
         const [user] = await this.Knex('users')
             .insert({
-                login: userData.login,
-                password: userData.password,
+                ...userData
             })
             .returning('*');
 
