@@ -18,13 +18,20 @@ export class ProductsDbService extends DbServiceBase {
     }
 
     async createProduct(productData: Omit<Product, 'id' | 'created_at' | 'updated_at'>): Promise<Product> {
+
+        const category = await this.Knex('categories').where("categories.name", productData.category_id).first()
+
+        if (!category) {
+            throw new Error(`Failed to find category!`);
+        }
+
         try {
             const [newProduct] = await this.Knex('products')
                 .insert({
                     title: productData.title,
                     image: productData.image || null,
                     price: this.Knex.raw('CAST(? AS DECIMAL(10,2))', [productData.price]),
-                    category_id: productData.category_id || null
+                    category_id: category.id || null
                 })
                 .returning('*');
 
@@ -89,6 +96,49 @@ export class ProductsDbService extends DbServiceBase {
     // Update product price
     async updatePrice(id: number, newPrice: number) {
         return this.Knex("products").update(id, { price: newPrice });
+    }
+
+    async updateById(id: number, data: {
+        title?: string;
+        price?: number;
+        category_id?: number;
+        image?: string;
+    }) {
+        try {
+            // Update the product
+            const updatedCount = await this.Knex('products')
+                .where({ id })
+                .update({
+                    ...data,
+                    updated_at: this.Knex.fn.now()  // Add timestamp for update
+                });
+
+            if (updatedCount === 0) {
+                return null; // Product not found
+            }
+
+            // Fetch and return the updated product
+            const updatedProduct = await this.Knex('products')
+                .where({ id })
+                .first();
+
+            return updatedProduct;
+        } catch (error) {
+            console.error('Error updating product:', error);
+            throw error;
+        }
+    };
+
+    async deleteById(id) {
+        try {
+            const [deletedProduct] = await this.Knex('products')
+                .where({ id })
+                .del()
+                .returning('*');
+            return deletedProduct || null;
+        } catch (error) {
+            throw new Error(`Error deleting product ${id}: ${error.message}`);
+        }
     }
 }
 

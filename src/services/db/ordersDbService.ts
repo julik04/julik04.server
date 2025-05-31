@@ -43,10 +43,19 @@ export class OrdersDbService extends DbServiceBase {
     }
 
     async updateOrder(id, updates) {
+        // Filter out 'order_date' and 'comment' if their values are null or undefined
+        const keysToFilter = ['order_date', 'comment'];
+        const filteredUpdates = Object.keys(updates).reduce((acc, key) => {
+            if (!keysToFilter.includes(key) || updates[key] != null) {
+                acc[key] = updates[key];
+            }
+            return acc;
+        }, {});
+
         try {
             const [updatedOrder] = await this.Knex('orders')
                 .where({ id })
-                .update(updates)
+                .update(filteredUpdates)
                 .returning('*');
             return updatedOrder || null;
         } catch (error) {

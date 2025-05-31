@@ -147,9 +147,9 @@ app.post("/signup", async (req: any, res: Response) => {
     return;
   }
 
-  const isPassValid = /^(?=.*\d)(?=.*[A-Z])[a-zA-Z0-9]{7,14}$/.test(password);
+  const isPassValid = /^(?=.*\d)(?=.*[A-Z])[a-zA-Z0-9]{7,255}$/.test(password);
 
-  if (!isPassValid || !(password.length > 6 && password.length < 255)) {
+  if (!isPassValid) {
     res.status(400).send({ data: { message: "Password is not valid!" } });
     return;
   }
@@ -244,19 +244,8 @@ app.get("/products", async (req: any, res: Response) => {
   })
 })
 
-app.get("/product", async (req: any, res: Response) => {
-  const product = await productsDbService.getById(6);
-  console.log({ product })
-  res.status(200).send({
-    data: {
-      Product: product,
-    }
-  })
-})
-
 app.post("/product",
-  upload.single('image'),  // Add Multer middleware
-  // handleMulterError,
+  upload.single('image'),  // Multer middleware,
   async (req: any, res: Response) => {
     const body = req.body;
     const title = body.title;
@@ -315,6 +304,111 @@ app.post("/product",
       }
     })
   })
+
+app.put("/product/:id",
+  upload.single('image'),
+  async (req: any, res: Response) => {
+    try {
+      const { id } = req.params;
+      const { title, price, category_id } = req.body;
+      const file = req.file;
+
+      // Validate product ID
+      if (!id) {
+        res.status(400).json({ data: { message: "Product ID is required!" } });
+        return;
+      }
+
+      // Validate required fields
+      if (!title) {
+        res.status(400).json({ data: { message: "Title is required!" } });
+        return;
+      }
+      if (!price) {
+        res.status(400).json({ data: { message: "Price is required!" } });
+        return;
+      }
+      if (!category_id) {
+        res.status(400).json({ data: { message: "Category ID is required!" } });
+        return;
+      }
+
+      // Check if product exists
+      const existingProduct = await productsDbService.getById(id);
+      if (!existingProduct) {
+        res.status(404).json({ data: { message: "Product not found!" } });
+        return;
+      }
+
+      let imagePath = existingProduct.image;
+
+      // Handle new image if provided
+      if (file) {
+        // Validate image content
+        const type = await fileTypeFromFile(file.path);
+        if (!type || !type.mime.startsWith('image/')) {
+          fs.unlinkSync(file.path);  // Remove invalid file
+          res.status(400).json({ data: { message: 'Invalid image format!' } });
+          return;
+        }
+
+        // Delete old image if exists
+        if (existingProduct.image) {
+          const oldImagePath = path.join(__dirname, '..', 'public', existingProduct.image);
+          if (fs.existsSync(oldImagePath)) {
+            fs.unlinkSync(oldImagePath);
+          }
+        }
+
+        imagePath = `/assets/${file.filename}`;
+      }
+
+      // Update product
+      const updatedProduct = await productsDbService.updateById(id, {
+        title,
+        price,
+        category_id,
+        image: imagePath
+      });
+
+      res.status(200).json({
+        data: {
+          message: "Product updated successfully!",
+          product: updatedProduct
+        }
+      });
+      return;
+    } catch (error) {
+      console.error("Error updating product:", error);
+      res.status(500).json({ data: { message: "Internal server error" } });
+      return;
+    }
+  }
+);
+
+app.delete("/product/:productId", async (req: any, res: Response) => {
+  const productId = req.params.productId;
+
+  if (!productId) {
+    res.status(400).send({ data: { message: "Product id is required!" } });
+    return;
+  }
+  const product = await productsDbService.getById(productId);
+
+  if (!product) {
+    res.status(400).send({ data: { message: "Product does not exist!" } });
+    return;
+  }
+
+  const Product = await productsDbService.deleteById(Number(productId))
+
+  res.status(201).json({
+    data: {
+      message: "Product deleted successfully!",
+      Product,
+    }
+  })
+})
 
 app.get("/masters", (req: any, res: Response) => {
   res.status(200).send({
@@ -393,6 +487,76 @@ app.post("/orders", async (req: any, res: Response) => {
     return;
   }
 })
+
+app.post("/orders/edit", async (req: any, res: Response) => {
+  const user_id = req.body.user_id;
+  // const phone_number = req.body.phone_number;
+  const order_date = req.body.order_date;
+  const comment = req.body.comment;
+
+  if (!user_id || !(await usersDbService.getById(user_id))) {
+    res.status(400).send({ data: { message: "User id is empty or not found!" } });
+    return;
+  }
+
+  // if (!phone_number || !/^(\+7|7|8)?[\s\-]?\(?[489][0-9]{2}\)?[\s\-]?[0-9]{3}[\s\-]?[0-9]{2}[\s\-]?[0-9]{2}$/.test(
+  //   phone_number
+  // )) {
+  //   res.status(400).send({ data: { message: "Phone number is empty or not valid!" } });
+  //   return;
+  // }
+
+  console.log({ order_date })
+
+  if (order_date && (new Date(order_date) < new Date())) {
+    console.log({
+      order_date: new Date(order_date),
+      today: new Date()
+    })
+    res.status(400).send({ data: { message: "Order date cannot be in the past!" } });
+    return;
+  }
+
+  try {
+    const order = await ordersDbService.updateOrder(user_id, { order_date, comment });
+
+    res.status(200).send({
+      data: {
+        message: "Success!",
+        Order: order,
+      }
+    });
+    return;
+  } catch (err) {
+    res.status(400).send({ data: { message: err.message } });
+    return;
+  }
+})
+
+app.delete("/orders/:orderId", async (req: any, res: Response) => {
+  const orderId = req.params.orderId;
+
+  if (!orderId) {
+    res.status(400).send({ data: { message: "Order id is required!" } });
+    return;
+  }
+  const order = await ordersDbService.getById(orderId)
+
+  if (!order) {
+    res.status(400).send({ data: { message: "Order does not exist!" } });
+    return;
+  }
+
+  const Order = await ordersDbService.deleteOrder(Number(orderId));
+
+  res.status(201).json({
+    data: {
+      message: "Order deleted successfully!",
+      Order,
+    }
+  })
+})
+
 
 app.get("/users/:login", async (req: any, res: Response) => {
   const login = req.params.login;
