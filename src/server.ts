@@ -11,6 +11,11 @@ import productsDbService from "./services/db/productsDbService.js";
 import usersDbService from "./services/db/usersDbService.js";
 import jwtService from "./services/jwtService.js";
 import ordersDbService from "./services/db/ordersDbService.js";
+import { categorizedProducts } from "./utils/categorizedProducts.js";
+import multer from "multer"
+import { fileTypeFromFile } from "file-type";
+import fs from "fs";
+
 
 
 import express from "express";
@@ -28,6 +33,53 @@ const assetsPath = path.join(projectRoot, 'assets'); // Path to the actual asset
 
 // --- Debugging: Log the calculated assets path ---
 console.log(`[Server Setup] Serving static files from: ${assetsPath}`);
+
+const storage = multer.diskStorage({
+  destination: assetsPath,
+  filename: (req, file, cb) => {
+    const uniqueName = Date.now() + '-' + Math.round(Math.random() * 1e9);
+    const ext = path.extname(file.originalname);
+    cb(null, `${uniqueName}${ext}`);
+  },
+});
+
+const fileFilter = (
+  req: express.Request,
+  file: any,
+  cb: multer.FileFilterCallback
+) => {
+  const allowedTypes = /jpeg|jpg|png|webp/;
+  const extname = allowedTypes.test(path.extname(file.originalname).toLowerCase());
+  const mimetype = allowedTypes.test(file.mimetype);
+
+  if (extname && mimetype) {
+    cb(null, true);
+  } else {
+    cb(new Error('Only images (JPEG, PNG, GIF) are allowed!'));
+  }
+};
+
+const upload = multer({
+  storage,
+  fileFilter,
+  limits: { fileSize: 5 * 1024 * 1024 }, // 5MB
+});
+
+// Error handling middleware for Multer
+const handleMulterError = (
+  err: Error,
+  req: express.Request,
+  res: express.Response,
+  next: express.NextFunction
+) => {
+  if (err instanceof multer.MulterError) {
+    return res.status(400).json({ data: { message: err.message } });
+  }
+  if (err) {
+    return res.status(400).json({ data: { message: err.message } });
+  }
+  next();
+};
 // ---
 
 // Load environment variables from .env file
@@ -181,10 +233,13 @@ app.post("/login", async (req: any, res: Response) => {
   res.status(200).send({ data: { message: "Success!", acessToken: token, login: login, role: user.role } });
 });
 
-app.get("/products", (req: any, res: Response) => {
+app.get("/products", async (req: any, res: Response) => {
+  const products = await productsDbService.getAllWithCategories({});
+
+  console.log({ products: (products) });
   res.status(200).send({
     data: {
-      Products
+      Products: categorizedProducts(products)
     }
   })
 })
@@ -199,6 +254,68 @@ app.get("/product", async (req: any, res: Response) => {
   })
 })
 
+app.post("/product",
+  upload.single('image'),  // Add Multer middleware
+  // handleMulterError,
+  async (req: any, res: Response) => {
+    const body = req.body;
+    const title = body.title;
+    const file = req.file;
+    const price = body.price;
+    const category_id = body.category_id;
+
+    console.log({ body: req.body })
+
+    if (!title) {
+      res.status(400).send({ data: { message: "Title is empty!" } });
+      return;
+    }
+
+    // if (!image) {
+    //   res.status(400).send({ data: { message: "Image is empty!" } });
+    //   return;
+    // }
+    if (!price) {
+      res.status(400).send({ data: { message: "Price is empty!" } });
+      return;
+    }
+    if (!category_id) {
+      res.status(400).send({ data: { message: "Category id is empty!" } });
+      return;
+    }
+
+    // Image validation
+    if (!file) {
+      res.status(400).send({ data: { message: "Image is required!" } });
+    }
+
+    // Verify actual file content
+    const type = await fileTypeFromFile(file.path);
+    if (!type || !type.mime.startsWith('image/')) {
+      fs.unlinkSync(file.path); // Remove invalid file
+      res.status(400).json({ data: { message: 'Invalid image content!' } });
+    }
+
+    // Create product with image path
+    const imagePath = `/assets/${file.filename}`;
+    const product = await productsDbService.createProduct({
+      title,
+      price,
+      category_id,
+      image: imagePath
+    });
+
+    res.status(201).json({
+      data: {
+        message: "Product created successfully!",
+        product: {
+          ...product,
+          image: imagePath
+        }
+      }
+    })
+  })
+
 app.get("/masters", (req: any, res: Response) => {
   res.status(200).send({
     data: {
@@ -208,9 +325,21 @@ app.get("/masters", (req: any, res: Response) => {
   })
 })
 
+app.get("/orders", async (req: any, res: Response) => {
+  const orders = await ordersDbService.getAllOrders();
+
+  console.log({ orders })
+
+  res.status(200).send({
+    data: {
+      Orders: orders
+    }
+  })
+})
+
 app.get("/orders/:userId", async (req: any, res: Response) => {
-  const userId = req.params;
-  const orders = await (userId ? ordersDbService.getOrdersByUserId(userId) : ordersDbService.getAllOrders());
+  const userId = req.params.userId;
+  const orders = await ordersDbService.getOrdersByUserId(userId);
 
   res.status(200).send({
     data: {

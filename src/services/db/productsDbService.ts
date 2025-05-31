@@ -2,9 +2,39 @@ import { json } from "express";
 import { DbServiceBase } from "./dbServiceBase/dbServiceBase.js";
 import knex from "knex";
 
+interface Product {
+    id?: number;
+    title: string;
+    image?: string;
+    price: number;
+    category_id?: number;
+    created_at?: Date;
+    updated_at?: Date;
+}
+
 export class ProductsDbService extends DbServiceBase {
     constructor() {
         super();
+    }
+
+    async createProduct(productData: Omit<Product, 'id' | 'created_at' | 'updated_at'>): Promise<Product> {
+        try {
+            const [newProduct] = await this.Knex('products')
+                .insert({
+                    title: productData.title,
+                    image: productData.image || null,
+                    price: this.Knex.raw('CAST(? AS DECIMAL(10,2))', [productData.price]),
+                    category_id: productData.category_id || null
+                })
+                .returning('*');
+
+            return newProduct;
+        } catch (error) {
+            if (error.code === '23503') { // Foreign key constraint (category_id)
+                throw new Error('Invalid category ID');
+            }
+            throw new Error(`Failed to create product: ${error.message}`);
+        }
     }
 
     async getById(id: number) {
