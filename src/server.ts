@@ -230,7 +230,7 @@ app.post("/login", async (req: any, res: Response) => {
 
   console.log({ decodedPayload });
 
-  res.status(200).send({ data: { message: "Success!", acessToken: token, login: login, role: user.role } });
+  res.status(200).send({ data: { message: "Success!", acessToken: token, login: login, role: user.role, id: user.id } });
 });
 
 app.get("/products", async (req: any, res: Response) => {

@@ -1,6 +1,7 @@
 import { json } from "express";
 import { DbServiceBase } from "./dbServiceBase/dbServiceBase.js";
 import knex from "knex";
+import categoriesDbService from "./categoriesDbService.js";
 
 interface Product {
     id?: number;
@@ -47,6 +48,11 @@ export class ProductsDbService extends DbServiceBase {
     async getById(id: number) {
         return this.Knex("products")
             .where("products.id", id).first()
+    }
+
+    async getByTitle(title: string) {
+        return this.Knex("products")
+            .where("products.title", title).first()
     }
 
     // Get product with category information
@@ -105,11 +111,18 @@ export class ProductsDbService extends DbServiceBase {
         image?: string;
     }) {
         try {
+            const category = await this.Knex("categories").where({ name: data.category_id }).first()
+
+            if (!category) {
+                throw new Error("Category not found!")
+            }
+
             // Update the product
             const updatedCount = await this.Knex('products')
                 .where({ id })
                 .update({
                     ...data,
+                    category_id: category.id,
                     updated_at: this.Knex.fn.now()  // Add timestamp for update
                 });
 
