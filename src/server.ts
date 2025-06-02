@@ -9,6 +9,7 @@ import { Products } from "./constants/Product.js"
 import { Masters, MasterInfo } from "./constants/Masters.js";
 import productsDbService from "./services/db/productsDbService.js";
 import usersDbService from "./services/db/usersDbService.js";
+import mastersDbService from "./services/db/mastersDbService.js";
 import jwtService from "./services/jwtService.js";
 import ordersDbService from "./services/db/ordersDbService.js";
 import { categorizedProducts } from "./utils/categorizedProducts.js";
@@ -418,6 +419,24 @@ app.get("/masters", (req: any, res: Response) => {
     }
   })
 })
+app.get("/masters/:id", async (req: any, res: Response) => {
+  try {
+    const id = req.params.id;
+    if (!id) {
+      return res.status(400).json({ data: { message: "Master ID is required!" } });
+    }
+
+    const master = await mastersDbService.getById(Number(id));
+    if (!master) {
+      return res.status(404).json({ data: { message: "Master not found!" } });
+    }
+
+    res.status(200).json({ data: { master } });
+  } catch (error) {
+    console.error("Error fetching master:", error);
+    res.status(500).json({ data: { message: "Internal server error" } });
+  }
+});
 
 app.get("/orders", async (req: any, res: Response) => {
   const orders = await ordersDbService.getAllOrders();

@@ -16,19 +16,15 @@ export class MainPage {
         });
     }
 
-    // Функция для ввода текста в поле и нажатия кнопки после ввода
     async fillAndSubmitSearch(text: string) {
         await this.page.evaluate((inputText) => {
-            // Находим поле ввода
             const inputEl = document.querySelector('input#a11y-search-input') as HTMLInputElement;
             if (!inputEl) {
                 throw new Error("fillAndSubmitSearch failed: Input element not found");
             }
-            // Устанавливаем текст и вызываем событие input, чтобы сработали слушатели
             inputEl.value = inputText;
             inputEl.dispatchEvent(new Event('input', { bubbles: true }));
 
-            // Находим кнопку с нужным текстом и кликаем по ней
             const btn = Array.from(document.querySelectorAll('button'))
                 .find(btn => btn.textContent?.trim() === 'Найти') as HTMLButtonElement | undefined;
             if (btn) {
@@ -43,9 +39,9 @@ export class MainPage {
 
     /**
      * Делает скриншот страницы.
-     * @param path Путь для сохранения скриншота.
+     * @param path Путь для сохранения скриншота с обязательным расширением (.png, .jpeg, или .webp).
      */
-    async takeScreenshot(path: string): Promise<void> {
+    async takeScreenshot(path: `${string}.${'png' | 'jpeg' | 'webp'}`): Promise<void> {
         await this.page.screenshot({ path });
     }
 
