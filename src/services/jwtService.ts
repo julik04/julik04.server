@@ -40,9 +40,19 @@ export class JWTservice extends DbServiceBase {
      * @returns {object} Decoded token payload
      * @throws {Error} If token is invalid or expired
      */
-    verify(token, options = {}) {
-        const mergedOptions = { ...this.defaultVerifyOptions, ...options };
-        return jwt.verify(token, this.secret, mergedOptions);
+    // verify(token, options = {}) {
+    //     const mergedOptions = { ...this.defaultVerifyOptions, ...options };
+    //     return jwt.verify(token, this.secret, mergedOptions);
+    // }
+
+    verify(token: string, options = {}): Promise<any> {
+        return new Promise((resolve, reject) => {
+            const mergedOptions = { ...this.defaultVerifyOptions, ...options };
+            jwt.verify(token, this.secret, mergedOptions, (err, decoded) => {
+                if (err) return reject(err);
+                resolve(decoded);
+            });
+        });
     }
 
     /**

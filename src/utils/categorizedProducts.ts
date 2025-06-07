@@ -2,7 +2,7 @@ export const categorizedProducts = (products) => {
     return products.reduce((acc, product) => {
         const category = product.category_name;
 
-        console.log({ product })
+        // console.log({ product })
 
         // Create category array if it doesn't exist
         if (!acc[category]) {

@@ -16,6 +16,8 @@ import { categorizedProducts } from "./utils/categorizedProducts.js";
 import multer from "multer"
 import { fileTypeFromFile } from "file-type";
 import fs from "fs";
+import checkAdmin from "./middlewares/checkAdminMiddleware.js";
+import categoriesDbService from "./services/db/categoriesDbService.js";
 
 
 
@@ -196,9 +198,9 @@ app.post("/signup", async (req: any, res: Response) => {
 })
 
 app.post("/login", async (req: any, res: Response) => {
-  console.log("Received request for login...");
+  // console.log("Received request for login...");
 
-  console.log({ reg: req.body });
+  // console.log({ reg: req.body });
   const login = req.body.login;
   const password = req.body.password;
 
@@ -208,7 +210,7 @@ app.post("/login", async (req: any, res: Response) => {
   }
 
   const user = await usersDbService.findByLogin(login);
-  console.log({ user });
+  // console.log({ user });
 
   if (!user) {
     res.status(400).send({ data: { message: "Login is wrong!" } });
@@ -224,7 +226,7 @@ app.post("/login", async (req: any, res: Response) => {
 
   // Логика с JWT токеном
 
-  const token = await jwtService.sign({ user });
+  const token = jwtService.sign({ user });
   await usersDbService.updateAccessToken(user.id, token);
 
   const decodedPayload = jwtService.decode(token);
@@ -233,6 +235,16 @@ app.post("/login", async (req: any, res: Response) => {
 
   res.status(200).send({ data: { message: "Success!", acessToken: token, login: login, role: user.role, id: user.id } });
 });
+
+app.get("/categories", async (req: any, res: Response) => {
+  const result = await categoriesDbService.getCategoriesHierarchy();
+  console.log(result);
+  res.status(200).send({
+    data: {
+      Categories: result
+    }
+  })
+})
 
 app.get("/products", async (req: any, res: Response) => {
   const products = await productsDbService.getAllWithCategories({});
@@ -246,6 +258,7 @@ app.get("/products", async (req: any, res: Response) => {
 })
 
 app.post("/product",
+  checkAdmin,
   upload.single('image'),  // Multer middleware,
   async (req: any, res: Response) => {
     const body = req.body;
@@ -307,6 +320,7 @@ app.post("/product",
   })
 
 app.put("/product/:id",
+  checkAdmin,
   upload.single('image'),
   async (req: any, res: Response) => {
     try {
@@ -387,29 +401,31 @@ app.put("/product/:id",
   }
 );
 
-app.delete("/product/:productId", async (req: any, res: Response) => {
-  const productId = req.params.productId;
+app.delete("/product/:productId",
+  checkAdmin,
+  async (req: any, res: Response) => {
+    const productId = req.params.productId;
 
-  if (!productId) {
-    res.status(400).send({ data: { message: "Product id is required!" } });
-    return;
-  }
-  const product = await productsDbService.getById(productId);
-
-  if (!product) {
-    res.status(400).send({ data: { message: "Product does not exist!" } });
-    return;
-  }
-
-  const Product = await productsDbService.deleteById(Number(productId))
-
-  res.status(201).json({
-    data: {
-      message: "Product deleted successfully!",
-      Product,
+    if (!productId) {
+      res.status(400).send({ data: { message: "Product id is required!" } });
+      return;
     }
+    const product = await productsDbService.getById(productId);
+
+    if (!product) {
+      res.status(400).send({ data: { message: "Product does not exist!" } });
+      return;
+    }
+
+    const Product = await productsDbService.deleteById(Number(productId))
+
+    res.status(201).json({
+      data: {
+        message: "Product deleted successfully!",
+        Product,
+      }
+    })
   })
-})
 
 app.get("/masters", (req: any, res: Response) => {
   res.status(200).send({
@@ -461,120 +477,125 @@ app.get("/orders/:userId", async (req: any, res: Response) => {
   })
 })
 
-app.post("/orders", async (req: any, res: Response) => {
-  const user_id = req.body.user_id;
-  // const phone_number = req.body.phone_number;
-  const order_date = req.body.order_date;
-  const comment = req.body.comment;
+app.post("/orders",
+  checkAdmin, async (req: any, res: Response) => {
+    const user_id = req.body.user_id;
+    // const phone_number = req.body.phone_number;
+    const order_date = req.body.order_date;
+    const comment = req.body.comment;
 
-  if (!user_id || !(await usersDbService.getById(user_id))) {
-    res.status(400).send({ data: { message: "User id is empty or not found!" } });
-    return;
-  }
+    if (!user_id || !(await usersDbService.getById(user_id))) {
+      res.status(400).send({ data: { message: "User id is empty or not found!" } });
+      return;
+    }
 
-  // if (!phone_number || !/^(\+7|7|8)?[\s\-]?\(?[489][0-9]{2}\)?[\s\-]?[0-9]{3}[\s\-]?[0-9]{2}[\s\-]?[0-9]{2}$/.test(
-  //   phone_number
-  // )) {
-  //   res.status(400).send({ data: { message: "Phone number is empty or not valid!" } });
-  //   return;
-  // }
+    // if (!phone_number || !/^(\+7|7|8)?[\s\-]?\(?[489][0-9]{2}\)?[\s\-]?[0-9]{3}[\s\-]?[0-9]{2}[\s\-]?[0-9]{2}$/.test(
+    //   phone_number
+    // )) {
+    //   res.status(400).send({ data: { message: "Phone number is empty or not valid!" } });
+    //   return;
+    // }
 
-  console.log({ order_date })
+    console.log({ order_date })
 
-  if (!order_date || (new Date(order_date) < new Date())) {
-    console.log({
-      order_date: new Date(order_date),
-      today: new Date()
-    })
-    res.status(400).send({ data: { message: "Order date is empty or it cannot be in the past!" } });
-    return;
-  }
+    if (!order_date || (new Date(order_date) < new Date())) {
+      console.log({
+        order_date: new Date(order_date),
+        today: new Date()
+      })
+      res.status(400).send({ data: { message: "Order date is empty or it cannot be in the past!" } });
+      return;
+    }
 
-  try {
-    const order = await ordersDbService.createOrder({ user_id, order_date, comment })
+    try {
+      const order = await ordersDbService.createOrder({ user_id, order_date, comment })
 
 
-    res.status(200).send({
-      data: {
-        message: "Success!",
-        Order: order,
-      }
-    });
-    return;
-  } catch (err) {
-    res.status(400).send({ data: { message: err.message } });
-    return;
-  }
-})
-
-app.post("/orders/edit", async (req: any, res: Response) => {
-  const user_id = req.body.user_id;
-  // const phone_number = req.body.phone_number;
-  const order_date = req.body.order_date;
-  const comment = req.body.comment;
-
-  if (!user_id || !(await usersDbService.getById(user_id))) {
-    res.status(400).send({ data: { message: "User id is empty or not found!" } });
-    return;
-  }
-
-  // if (!phone_number || !/^(\+7|7|8)?[\s\-]?\(?[489][0-9]{2}\)?[\s\-]?[0-9]{3}[\s\-]?[0-9]{2}[\s\-]?[0-9]{2}$/.test(
-  //   phone_number
-  // )) {
-  //   res.status(400).send({ data: { message: "Phone number is empty or not valid!" } });
-  //   return;
-  // }
-
-  console.log({ order_date })
-
-  if (order_date && (new Date(order_date) < new Date())) {
-    console.log({
-      order_date: new Date(order_date),
-      today: new Date()
-    })
-    res.status(400).send({ data: { message: "Order date cannot be in the past!" } });
-    return;
-  }
-
-  try {
-    const order = await ordersDbService.updateOrder(user_id, { order_date, comment });
-
-    res.status(200).send({
-      data: {
-        message: "Success!",
-        Order: order,
-      }
-    });
-    return;
-  } catch (err) {
-    res.status(400).send({ data: { message: err.message } });
-    return;
-  }
-})
-
-app.delete("/orders/:orderId", async (req: any, res: Response) => {
-  const orderId = req.params.orderId;
-
-  if (!orderId) {
-    res.status(400).send({ data: { message: "Order id is required!" } });
-    return;
-  }
-  const order = await ordersDbService.getById(orderId)
-
-  if (!order) {
-    res.status(400).send({ data: { message: "Order does not exist!" } });
-    return;
-  }
-
-  const Order = await ordersDbService.deleteOrder(Number(orderId));
-
-  res.status(201).json({
-    data: {
-      message: "Order deleted successfully!",
-      Order,
+      res.status(200).send({
+        data: {
+          message: "Success!",
+          Order: order,
+        }
+      });
+      return;
+    } catch (err) {
+      res.status(400).send({ data: { message: err.message } });
+      return;
     }
   })
-})
+
+app.post("/orders/edit",
+  checkAdmin,
+  async (req: any, res: Response) => {
+    const user_id = req.body.user_id;
+    // const phone_number = req.body.phone_number;
+    const order_date = req.body.order_date;
+    const comment = req.body.comment;
+
+    if (!user_id || !(await usersDbService.getById(user_id))) {
+      res.status(400).send({ data: { message: "User id is empty or not found!" } });
+      return;
+    }
+
+    // if (!phone_number || !/^(\+7|7|8)?[\s\-]?\(?[489][0-9]{2}\)?[\s\-]?[0-9]{3}[\s\-]?[0-9]{2}[\s\-]?[0-9]{2}$/.test(
+    //   phone_number
+    // )) {
+    //   res.status(400).send({ data: { message: "Phone number is empty or not valid!" } });
+    //   return;
+    // }
+
+    console.log({ order_date })
+
+    if (order_date && (new Date(order_date) < new Date())) {
+      console.log({
+        order_date: new Date(order_date),
+        today: new Date()
+      })
+      res.status(400).send({ data: { message: "Order date cannot be in the past!" } });
+      return;
+    }
+
+    try {
+      const order = await ordersDbService.updateOrder(user_id, { order_date, comment });
+
+      res.status(200).send({
+        data: {
+          message: "Success!",
+          Order: order,
+        }
+      });
+      return;
+    } catch (err) {
+      res.status(400).send({ data: { message: err.message } });
+      return;
+    }
+  })
+
+app.delete("/orders/:orderId",
+  checkAdmin,
+  async (req: any, res: Response) => {
+    const orderId = req.params.orderId;
+
+    if (!orderId) {
+      res.status(400).send({ data: { message: "Order id is required!" } });
+      return;
+    }
+    const order = await ordersDbService.getById(orderId)
+
+    if (!order) {
+      res.status(400).send({ data: { message: "Order does not exist!" } });
+      return;
+    }
+
+    const Order = await ordersDbService.deleteOrder(Number(orderId));
+
+    res.status(201).json({
+      data: {
+        message: "Order deleted successfully!",
+        Order,
+      }
+    })
+  })
 
 
 app.get("/users/:login", async (req: any, res: Response) => {
