@@ -246,6 +246,25 @@ app.get("/categories", async (req: any, res: Response) => {
   })
 })
 
+app.get("/product/:id", async (req: any, res: Response) => {
+  const id = req.params.id;
+  const product = await productsDbService.getById(id);
+  if (!product) {
+    res.status(404).json({ data: { message: "Product not found!" } });
+    return;
+  }
+
+  res.status(200).send({
+    data: {
+      Product: product
+    }
+  })
+});
+
+app.get("/products/popular", async (req: any, res: Response) => {
+  const popularProducts = await productsDbService.getPopularProducts();
+  res.status(200).json(popularProducts);
+});
 app.get("/products", async (req: any, res: Response) => {
   const products = await productsDbService.getAllWithCategories({});
 
@@ -258,8 +277,8 @@ app.get("/products", async (req: any, res: Response) => {
 })
 
 app.post("/product",
-  checkAdmin,
   upload.single('image'),  // Multer middleware,
+  checkAdmin,
   async (req: any, res: Response) => {
     const body = req.body;
     const title = body.title;

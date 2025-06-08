@@ -47,7 +47,7 @@ export class ProductsDbService extends DbServiceBase {
 
     async getById(id: number) {
         return this.Knex("products")
-            .where("products.id", id).first()
+            .where("id", id).first()
     }
 
     async getByTitle(title: string) {
@@ -84,7 +84,11 @@ export class ProductsDbService extends DbServiceBase {
 
         return query;
     }
-
+    async getPopularProducts() {
+        return this.Knex("products")
+            .orderBy("created_at", "desc")
+            .limit(10);
+    }
     // Get products by category ID (including pagination optional)
     async getByCategoryId(categoryId: number, page = 1, pageSize = 10) {
         return this.Knex("products")
