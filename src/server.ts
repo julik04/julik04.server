@@ -496,52 +496,51 @@ app.get("/orders/:userId", async (req: any, res: Response) => {
   })
 })
 
-app.post("/orders",
-  checkAdmin, async (req: any, res: Response) => {
-    const user_id = req.body.user_id;
-    // const phone_number = req.body.phone_number;
-    const order_date = req.body.order_date;
-    const comment = req.body.comment;
+app.post("/orders", async (req: any, res: Response) => {
+  const user_id = req.body.user_id;
+  // const phone_number = req.body.phone_number;
+  const order_date = req.body.order_date;
+  const comment = req.body.comment;
 
-    if (!user_id || !(await usersDbService.getById(user_id))) {
-      res.status(400).send({ data: { message: "User id is empty or not found!" } });
-      return;
-    }
+  if (!user_id || !(await usersDbService.getById(user_id))) {
+    res.status(400).send({ data: { message: "User id is empty or not found!" } });
+    return;
+  }
 
-    // if (!phone_number || !/^(\+7|7|8)?[\s\-]?\(?[489][0-9]{2}\)?[\s\-]?[0-9]{3}[\s\-]?[0-9]{2}[\s\-]?[0-9]{2}$/.test(
-    //   phone_number
-    // )) {
-    //   res.status(400).send({ data: { message: "Phone number is empty or not valid!" } });
-    //   return;
-    // }
+  // if (!phone_number || !/^(\+7|7|8)?[\s\-]?\(?[489][0-9]{2}\)?[\s\-]?[0-9]{3}[\s\-]?[0-9]{2}[\s\-]?[0-9]{2}$/.test(
+  //   phone_number
+  // )) {
+  //   res.status(400).send({ data: { message: "Phone number is empty or not valid!" } });
+  //   return;
+  // }
 
-    console.log({ order_date })
+  console.log({ order_date })
 
-    if (!order_date || (new Date(order_date) < new Date())) {
-      console.log({
-        order_date: new Date(order_date),
-        today: new Date()
-      })
-      res.status(400).send({ data: { message: "Order date is empty or it cannot be in the past!" } });
-      return;
-    }
+  if (!order_date || (new Date(order_date) < new Date())) {
+    console.log({
+      order_date: new Date(order_date),
+      today: new Date()
+    })
+    res.status(400).send({ data: { message: "Order date is empty or it cannot be in the past!" } });
+    return;
+  }
 
-    try {
-      const order = await ordersDbService.createOrder({ user_id, order_date, comment })
+  try {
+    const order = await ordersDbService.createOrder({ user_id, order_date, comment })
 
 
-      res.status(200).send({
-        data: {
-          message: "Success!",
-          Order: order,
-        }
-      });
-      return;
-    } catch (err) {
-      res.status(400).send({ data: { message: err.message } });
-      return;
-    }
-  })
+    res.status(200).send({
+      data: {
+        message: "Success!",
+        Order: order,
+      }
+    });
+    return;
+  } catch (err) {
+    res.status(400).send({ data: { message: err.message } });
+    return;
+  }
+})
 
 app.post("/orders/edit",
   checkAdmin,

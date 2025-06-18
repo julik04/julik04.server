@@ -31,6 +31,7 @@ export class JWTservice extends DbServiceBase {
     sign(payload, options = {}) {
         const mergedOptions = { ...this.defaultSignOptions, ...options };
         return jwt.sign(payload, this.secret, mergedOptions);
+
     }
 
     /**

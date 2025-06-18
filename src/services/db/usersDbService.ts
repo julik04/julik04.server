@@ -14,10 +14,19 @@ export class UsersDbService extends DbServiceBase {
         if (!pepper) {
             throw new Error('SECURITY_PEPPER environment variable is not set');
         }
-
         this.pepper = pepper;
+        setInterval(() => {
+            this.cleanOldTokens();
+        }, 24 * 60 * 60 * 1000); // Ежедневно
     }
 
+    async cleanOldTokens() {
+        // Удаляем токены старше 30 дней
+        const cutoffDate = new Date(Date.now() - 30 * 24 * 60 * 60 * 1000);
+        await this.Knex('users')
+            .where('last_login', '<', cutoffDate)
+            .update({ accessToken: null });
+    }
     async getById(id: number) {
         return this.Knex("users")
             .where("users.id", id).first()
@@ -27,23 +36,26 @@ export class UsersDbService extends DbServiceBase {
         return this.Knex("users").where("users.login", login).first();
     }
 
-    async createUser(userData: { login: string; password: string, full_name: string, phone_number: string, birth_date: Date }) {
-        const [user] = await this.Knex('users')
-            .insert({
-                ...userData
-            })
-            .returning('*');
-
+    async createUser(userData: {
+        login: string;
+        password: string,
+        full_name: string,
+        phone_number: string,
+        birth_date: Date
+    }) {
+        const [user] = await this.Knex('users').insert({
+            ...userData,
+            role: 'user'
+        }).returning('*');
         return user;
     }
 
     async updateAccessToken(id: number, accessToken: string) {
-        const [user] = await this.Knex('users')
+        await this.Knex('users')
             .where({ id })
-            .update({ accessToken: accessToken })
-            .returning('*');
+            .update({ accessToken: accessToken });
 
-        return user;
+        return;
     }
 
     async deleteUser(id: number): Promise<void> {
