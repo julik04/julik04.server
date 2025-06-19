@@ -1,4 +1,28 @@
 const categoriesObj = {
+  Популярное: [
+    {
+      Название: "Банан 1.6 мм Tear опал OP-05 5*8 мм внутренняя резьба титан",
+      Цена: "1800",
+      Изображение: "/assets/product-image.jpg",
+    },
+    {
+      Название: "Масло для татуировок Druid - Spring Series Лимон 250 мл",
+      Цена: "800",
+      Изображение: "/assets/spring.jpg",
+    },
+    {
+      Название:
+        "Гель для ухода за татуированной кожей Tattoo Revive OLASTIC 5 мл",
+      Цена: "80",
+      Изображение: "/assets/revgel.jpg",
+    },
+    {
+      Название:
+        "Пленка для заживления Супрасорб Ф (Suprasorb F) 20 см х 30 см - 1 шт",
+      Цена: "450",
+      Изображение: "/assets/suprasorb2030.jpg",
+    },
+  ],
   "Всё для татуировки": {
     Аксессуары: {
       "Для мастеров": [
@@ -40,7 +64,7 @@ const categoriesObj = {
         {
           Название: "Искусственная кожа лицо желтая 3D",
           Цена: "170",
-          Изображение: "/assets/skinface.jpg",
+          Изображение: "/assets/skinface.png",
         },
         {
           Название: "Искусственная кожа губы 260х150 мм 2 мм желтая 3D",
@@ -169,8 +193,100 @@ const categoriesObj = {
           Изображение: "/assets/allegory2.jpg",
         },
       ],
-      "Eternal Ink": [],
-      Intenze: [],
+      "Eternal Ink": [
+        {
+          Название: "Краска для тату Eternal Pepto Pink",
+          Цена: "525",
+          Изображение: "/assets/eternal1.jpg",
+        },
+        {
+          Название: "Краска для тату Eternal Neutral Gray 20",
+          Цена: "480",
+          Изображение: "/assets/eternal2.jpg",
+        },
+        {
+          Название: "Краска для тату Eternal Ivory",
+          Цена: "480",
+          Изображение: "/assets/eternal3.jpg",
+        },
+        {
+          Название: "Краска для тату Eternal Tibetan Red",
+          Цена: "1500",
+          Изображение: "/assets/eternal4.jpg",
+        },
+        {
+          Название: "Краска для тату Eternal Rigor Mortis",
+          Цена: "900",
+          Изображение: "/assets/eternal5.jpg",
+        },
+        {
+          Название: "Краска для тату Eternal Mississippi Mud",
+          Цена: "525",
+          Изображение: "/assets/eternal6.jpg",
+        },
+        {
+          Название: "Краска для тату Eternal Neutral Gray 60",
+          Цена: "480",
+          Изображение: "/assets/eternal7.jpg",
+        },
+        {
+          Название: "Краска для тату Eternal Plague Brown",
+          Цена: "900",
+          Изображение: "/assets/eternal8.jpg",
+        },
+        {
+          Название: "Краска для тату Eternal Graveside Dark",
+          Цена: "900",
+          Изображение: "/assets/eternal9.jpg",
+        },
+        {
+          Название: "Краска для тату Eternal Equinox",
+          Цена: "900",
+          Изображение: "/assets/eternal10.jpg",
+        },
+      ],
+      Intenze: [
+        {
+          Название: "Набор красок для тату Intenze 19 Color Set - 19 шт",
+          Цена: "9225",
+          Изображение: "/assets/intenze.jpg",
+        },
+        {
+          Название: "Краска для тату Intenze True Black",
+          Цена: "525",
+          Изображение: "/assets/intenze1.jpg",
+        },
+        {
+          Название: "Краска для тату Intenze Snow White Opaque",
+          Цена: "525",
+          Изображение: "/assets/intenze2.jpg",
+        },
+        {
+          Название: "Краска для тату Intenze Sangria",
+          Цена: "1035",
+          Изображение: "/assets/intenze3.jpg",
+        },
+        {
+          Название: "Краска для тату Intenze Soft Orange",
+          Цена: "525",
+          Изображение: "/assets/intenze4.jpg",
+        },
+        {
+          Название: "Краска для тату Intenze Pink Panther",
+          Цена: "525",
+          Изображение: "/assets/intenze5.jpeg",
+        },
+        {
+          Название: "Краска для тату Intenze Lime Green",
+          Цена: "525",
+          Изображение: "/assets/intenze6.jpeg",
+        },
+        {
+          Название: "Краска для тату Intenze Ocean Blue",
+          Цена: "1035",
+          Изображение: "/assets/intenze7.jpeg",
+        },
+      ],
       Nocturnal: [
         {
           Название: "Набор красок для тату Nocturnal West Coast Blend - 3 шт",
@@ -188,21 +304,126 @@ const categoriesObj = {
           Изображение: "/assets/nocturnal2.jpg",
         },
       ],
-      "World Famous": [],
+      "World Famous": [
+        {
+          Название: "Краска для тату World Famous Jenna Kerr",
+          Цена: "1600",
+          Изображение: "/assets/world1.jpg",
+        },
+        {
+          Название: "Краска для тату World Famous Gorsky's Rotting Lust",
+          Цена: "1600",
+          Изображение: "/assets/world2.jpg",
+        },
+        {
+          Название: "Краска для тату World Famous SANDRA DAUKSHTA",
+          Цена: "1600",
+          Изображение: "/assets/world3.jpg",
+        },
+        {
+          Название: "Краска для тату World Famous Sandra Daukshta",
+          Цена: "1600",
+          Изображение: "/assets/world4.jpg",
+        },
+        {
+          Название: "Краска для тату World Famous Ilya Fom Gazelle",
+          Цена: "1600",
+          Изображение: "/assets/world5.jpg",
+        },
+        {
+          Название: "Краска для тату World Famous Jenna Kerr",
+          Цена: "1600",
+          Изображение: "/assets/world6.jpg",
+        },
+        {
+          Название: "Краска для тату World Famous Rembrandt Red",
+          Цена: "1470",
+          Изображение: "/assets/world7.jpg",
+        },
+        {
+          Название: "Краска для тату World Famous Sinatra Blue",
+          Цена: "1470",
+          Изображение: "/assets/world8.jpg",
+        },
+        {
+          Название: "Краска для тату World Famous Oleg Shepelenko",
+          Цена: "1600",
+          Изображение: "/assets/world9.jpg",
+        },
+        {
+          Название: "Краска для тату World Famous Maks Kornev's Mucus",
+          Цена: "1600",
+          Изображение: "/assets/world10.jpg",
+        },
+        {
+          Название: "Краска для тату World Famous Gorsky's Dark Blizzard",
+          Цена: "1600",
+          Изображение: "/assets/world11.jpg",
+        },
+      ],
     },
-    "Мыло и пенка": {},
-    "Тату машинки": {},
+    "Мыло и пенка": [],
+    "Тату машинки": [],
   },
 
   "Всё для пирсинга": {
-    "Инструменты для пирсинга": {},
-    "Подставки под украшения": {},
-    Украшения: {},
+    "Инструменты для пирсинга": [],
+    "Подставки под украшения": [],
+    Украшения: {
+      Бананы: [
+        {
+          Название:
+            "Банан 1.6 мм Tear опал OP-05 5*8 мм внутренняя резьба титан",
+          Цена: "1800",
+          Изображение: "/assets/product-image.jpg",
+        },
+        {
+          Название:
+            "Банан 1.6 мм стразы Swarovski Violet Crystal 5*8 мм внутренняя резьба титан",
+          Цена: "1500",
+          Изображение: "/assets/purplebanana.jpg",
+        },
+        {
+          Название: "Банан 1.6 мм шары 5*8 мм внутренняя резьба титан",
+          Цена: "500",
+          Изображение: "/assets/ballsbanana.jpg",
+        },
+        {
+          Название:
+            "Банан 1.6 мм стразы Swarovski Хамелеон Crystal 5*8 мм внутренняя резьба титан",
+          Цена: "1500",
+          Изображение: "/assets/chambanana.jpg",
+        },
+        {
+          Название:
+            "Банан 1.6 мм стразы Crystal Pearl 5*8 мм внутренняя резьба титан",
+          Цена: "700",
+          Изображение: "/assets/titanbanana.jpg",
+        },
+      ],
+      Кольца: [
+        {
+          Название: "Кольцо кликер 1.2 мм Трио титан",
+          Цена: "1000",
+          Изображение: "/assets/triotitan.jpg",
+        },
+        {
+          Название: "Кольцо кликер 1.2 мм 17К OP-17 diamond титан",
+          Цена: "2000",
+          Изображение: "/assets/diamondtitan.jpg",
+        },
+        {
+          Название: "Кольцо кликер 1.2 мм Demilune титан",
+          Цена: "1500",
+          Изображение: "/assets/demilune.jpg",
+        },
+      ],
+    },
   },
   "Всё для студии": {
-    "Дезинфекция и стерилизация": {},
-    Лампы: {},
-    Расходники: {},
+    "Дезинфекция и стерилизация": [],
+    Лампы: [],
+    Расходники: [],
   },
 };
 

@@ -62,10 +62,6 @@ export class JWTservice extends DbServiceBase {
      * @returns {object|null} Decoded payload or null if invalid
      */
     decode(token) {
-        if (!this.verify(token)) {
-            return null;
-        }
-
         return jwt.decode(token);
     }
 }

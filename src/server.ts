@@ -5,7 +5,6 @@ import { fileURLToPath } from "url";
 import dotenv from "dotenv";
 import { NextFunction, Response } from "express";
 import cors from "cors";
-import { Products } from "./constants/Product.js"
 import { Masters, MasterInfo } from "./constants/Masters.js";
 import productsDbService from "./services/db/productsDbService.js";
 import usersDbService from "./services/db/usersDbService.js";
@@ -99,17 +98,8 @@ app.use(express.json());
 // Any request starting with /assets/... will look for files in your assetsPath folder
 app.use('/assets', express.static(assetsPath));
 // ---
-app.use(cors({ origin: "http://localhost:3000" }));
+app.use(cors({ origin: "http://localhost:3000", allowedHeaders: ['Content-Type', 'Authorization'] }));
 
-// Swagger middleware
-// app.use(
-//   "/api-docs",
-//   swaggerUI.serve,
-//   swaggerUI.setup(swaggerSpecs, {
-//     explorer: true,
-//     customCssUrl: "/swagger-ui.css",
-//   })
-// );
 
 app.post("/signup", async (req: any, res: Response) => {
   const body = req.body;
@@ -169,14 +159,14 @@ app.post("/signup", async (req: any, res: Response) => {
     return;
   }
 
-  const dateRegex =
-    /((20)[0-9]{2}[-](0[13578]|1[02])[-](0[1-9]|[12][0-9]|3[01]))|((20)[0-9]{2}[-](0[469]|11)[-](0[1-9]|[12][0-9]|30))|((20)[0-9]{2}[-](02)[-](0[1-9]|1[0-9]|2[0-8]))|((((20)(04|08|[2468][048]|[13579][26]))|2000)[-](02)[-]29)/;
+  // const dateRegex =
+    // /(((0[1-9]|[12][0-9]|3[01])\.(0[13578]|1[02])\.(20[0-9]{2}))|(((0[1-9]|[12][0-9]|30)\.(0[469]|11)\.(20[0-9]{2}))|(((0[1-9]|1[0-9]|2[0-8])\.02\.(20[0-9]{2})))|(29\.02\.20(0[048]|[2468][048]|[13579][26]))))/;
+//|| !dateRegex.test(birth_date)
 
-
-  if (!birth_date || !dateRegex.test(birth_date)) {
-    res.status(400).send({ data: { message: "Birth date is empty or not valid!" } });
-    return;
-  }
+  // if (!birth_date ) {
+  //   res.status(400).send({ data: { message: "Birth date is empty or not valid!" } });
+  //   return;
+  // }
 
   if (!phone_number || !/^(\+7|7|8)?[\s\-]?\(?[489][0-9]{2}\)?[\s\-]?[0-9]{3}[\s\-]?[0-9]{2}[\s\-]?[0-9]{2}$/.test(
     phone_number
@@ -226,7 +216,9 @@ app.post("/login", async (req: any, res: Response) => {
 
   // Логика с JWT токеном
 
-  const token = jwtService.sign({ user });
+  const token = jwtService.sign({   id: user.id,
+    role: user.role,
+    login: user.login });
   await usersDbService.updateAccessToken(user.id, token);
 
   const decodedPayload = jwtService.decode(token);
@@ -278,7 +270,7 @@ app.get("/products", async (req: any, res: Response) => {
 
 app.post("/product",
   upload.single('image'),  // Multer middleware,
-  checkAdmin,
+  // checkAdmin,
   async (req: any, res: Response) => {
     const body = req.body;
     const title = body.title;
@@ -339,7 +331,7 @@ app.post("/product",
   })
 
 app.put("/product/:id",
-  checkAdmin,
+  // checkAdmin,
   upload.single('image'),
   async (req: any, res: Response) => {
     try {
@@ -421,7 +413,7 @@ app.put("/product/:id",
 );
 
 app.delete("/product/:productId",
-  checkAdmin,
+  // checkAdmin,
   async (req: any, res: Response) => {
     const productId = req.params.productId;
 
@@ -543,7 +535,7 @@ app.post("/orders", async (req: any, res: Response) => {
 })
 
 app.post("/orders/edit",
-  checkAdmin,
+  // checkAdmin,
   async (req: any, res: Response) => {
     const user_id = req.body.user_id;
     // const phone_number = req.body.phone_number;
@@ -554,13 +546,6 @@ app.post("/orders/edit",
       res.status(400).send({ data: { message: "User id is empty or not found!" } });
       return;
     }
-
-    // if (!phone_number || !/^(\+7|7|8)?[\s\-]?\(?[489][0-9]{2}\)?[\s\-]?[0-9]{3}[\s\-]?[0-9]{2}[\s\-]?[0-9]{2}$/.test(
-    //   phone_number
-    // )) {
-    //   res.status(400).send({ data: { message: "Phone number is empty or not valid!" } });
-    //   return;
-    // }
 
     console.log({ order_date })
 
@@ -590,7 +575,7 @@ app.post("/orders/edit",
   })
 
 app.delete("/orders/:orderId",
-  checkAdmin,
+  // checkAdmin,
   async (req: any, res: Response) => {
     const orderId = req.params.orderId;
 
