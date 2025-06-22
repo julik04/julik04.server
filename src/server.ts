@@ -98,7 +98,7 @@ app.use(express.json());
 // Any request starting with /assets/... will look for files in your assetsPath folder
 app.use('/assets', express.static(assetsPath));
 // ---
-app.use(cors({ origin: "http://194.87.236.3:3000", allowedHeaders: ['Content-Type', 'Authorization'] }));
+app.use(cors({ origin: "http://176.119.157.182:3000", allowedHeaders: ['Content-Type', 'Authorization'] }));
 
 
 app.post("/signup", async (req: any, res: Response) => {
