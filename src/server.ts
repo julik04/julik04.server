@@ -98,7 +98,7 @@ app.use(express.json());
 // Any request starting with /assets/... will look for files in your assetsPath folder
 app.use('/assets', express.static(assetsPath));
 // ---
-app.use(cors({ origin: "http://localhost:3000", allowedHeaders: ['Content-Type', 'Authorization'] }));
+app.use(cors({ origin: "http://194.87.236.3:3000", allowedHeaders: ['Content-Type', 'Authorization'] }));
 
 
 app.post("/signup", async (req: any, res: Response) => {
@@ -160,8 +160,8 @@ app.post("/signup", async (req: any, res: Response) => {
   }
 
   // const dateRegex =
-    // /(((0[1-9]|[12][0-9]|3[01])\.(0[13578]|1[02])\.(20[0-9]{2}))|(((0[1-9]|[12][0-9]|30)\.(0[469]|11)\.(20[0-9]{2}))|(((0[1-9]|1[0-9]|2[0-8])\.02\.(20[0-9]{2})))|(29\.02\.20(0[048]|[2468][048]|[13579][26]))))/;
-//|| !dateRegex.test(birth_date)
+  // /(((0[1-9]|[12][0-9]|3[01])\.(0[13578]|1[02])\.(20[0-9]{2}))|(((0[1-9]|[12][0-9]|30)\.(0[469]|11)\.(20[0-9]{2}))|(((0[1-9]|1[0-9]|2[0-8])\.02\.(20[0-9]{2})))|(29\.02\.20(0[048]|[2468][048]|[13579][26]))))/;
+  //|| !dateRegex.test(birth_date)
 
   // if (!birth_date ) {
   //   res.status(400).send({ data: { message: "Birth date is empty or not valid!" } });
@@ -216,9 +216,11 @@ app.post("/login", async (req: any, res: Response) => {
 
   // Логика с JWT токеном
 
-  const token = jwtService.sign({   id: user.id,
+  const token = jwtService.sign({
+    id: user.id,
     role: user.role,
-    login: user.login });
+    login: user.login
+  });
   await usersDbService.updateAccessToken(user.id, token);
 
   const decodedPayload = jwtService.decode(token);
